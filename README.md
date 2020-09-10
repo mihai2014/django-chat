@@ -6,11 +6,22 @@ Implementation of tutorial example from :
 
 Instalation
 ===========
-
+'''
 virtualenv env
 source env/bin/activate
 pip install -r requirements.txt
-python manage.py runserver 0:8000
 
+You also need to install Docker.
+On Fedora:
+dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker-ce.repo
+dnf install docker-ce
+
+and launch:
+
+service docker start  (systemctl enable docker)
+docker run -p 6379:6379 -d redis:5
+
+python manage.py runserver 0:8000
+'''
 
 

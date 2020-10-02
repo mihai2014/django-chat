@@ -1,0 +1,179 @@
+https://computingforgeeks.com/how-to-install-redis-on-fedora/
+
+Welcome to our tutorial on how to Install Redis on Fedora 30/29/28. Redis is an open-source in-memory data store with optional persistent writes to disk. You can use Redis as a message broker, database or for caching. It supports strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes, and other data structures.
+
+For Ubuntu 18.04 / Debian 9, use:
+
+How to Install Redis on Ubuntu 18.04 / Debian 9
+How to Install Redis on Fedora 30/29/28
+
+Follow the steps below to install Redis on Fedora 30/29/28. You can choose to do a clustered setup or a single instance installation. This installation is for a single instance but I’ll cover Redis cluster setup in my next article.
+Step 1: Update Fedora system
+
+Start the installation by ensuring your system is up to date.
+
+sudo dnf -y update
+
+Step 2: Install Redis on Fedora 30/29/28
+
+Once your system is updated, install Redis on Fedora by running the command:
+
+sudo dnf -y install redis
+
+Step 3: Start Redis Service
+
+Once the package is installed, start and enable Redis service to start on boot
+
+sudo systemctl enable --now redis
+
+Step 4: Configure Redis Server
+
+We will consider few Redis standard configurations
+Enable Listen on all interfaces
+
+By default, Redis service listens on 127.0.0.1. Allow the service to listen on all network interfaces if you need remote clients to connect to it.
+
+Open the file /etc/redis.conf with your favorite text editor
+
+sudo vim /etc/redis.conf
+
+Then change line 66 bind 127.0.0.1 to below:
+
+bind 0.0.0.0
+
+Configure Redis Authentication
+
+Configure Redis Authentication for clients to require AUTH <PASSWORD> before processing any other commands.
+
+requirepass  <AuthPassword>
+
+Example:
+
+requirepass oobaiY8
+
+Set Persistent Store for Recovery
+
+Set persistence mode by changing the appendonlyvalue to yes
+
+appendonly yes
+appendfilename "appendonly.aof"
+
+Restart redis service after making the changes
+
+sudo systemctl restart redis
+
+If you have an active firewalld service, allow port 6379
+
+sudo firewall-cmd --add-port=6379/tcp --permanenent
+sudo firewall-cmd --reload
+
+Check redis service status:
+
+$ sudo systemctl status redis
+● redis.service - Redis persistent key-value database
+   Loaded: loaded (/usr/lib/systemd/system/redis.service; enabled; vendor preset: disabled)
+  Drop-In: /etc/systemd/system/redis.service.d
+           └─limit.conf
+   Active: active (running) since Mon 2019-05-06 22:10:56 EAT; 12s ago
+ Main PID: 4744 (redis-server)
+    Tasks: 4 (limit: 2323)
+   Memory: 1.6M
+   CGroup: /system.slice/redis.service
+           └─4744 /usr/bin/redis-server 127.0.0.1:6379
+
+May 06 22:10:56 localhost.localdomain systemd[1]: Starting Redis persistent key-value database...
+May 06 22:10:56 localhost.localdomain systemd[1]: Started Redis persistent key-value database.
+
+Also verify the listen address:
+
+$ sudo ss -tunelp | grep 6379
+tcp LISTEN 0 128 *:6379  *:*  users:(("redis-server",pid=28163,fd=4)) uid:995 ino:305
+
+Step 5: Connect to Redis
+
+Confirm that you can connect to redis locally:
+
+$ redis-cli
+127.0.0.1:6379>
+
+Test authenticate:
+
+127.0.0.1:6379> AUTH <AuthPassword>
+OK
+
+You should receive OK in the output. If you input a wrong password, Authentication should fail:
+
+127.0.0.1:6379> AUTH WrongPassword 
+(error) ERR invalid password
+
+Check redis information.
+
+127.0.0.1:6379>  INFO
+
+This will output a long list of data. You can limit the output by passing Section as an argument. E.g.
+
+127.0.0.1:6379> INFO Server
+# Server
+redis_version:5.0.2
+redis_git_sha1:00000000
+redis_git_dirty:0
+redis_build_id:9ce1182a4801eefb
+redis_mode:standalone
+os:Linux 4.18.16-300.fc29.x86_64 x86_64
+arch_bits:64
+multiplexing_api:epoll
+atomicvar_api:atomic-builtin
+gcc_version:8.2.1
+process_id:11000
+run_id:48846b4a1b59f792183d4ca5637937b5eced7e36
+tcp_port:6379
+uptime_in_seconds:563
+uptime_in_days:0
+hz:10
+configured_hz:10
+lru_clock:431578
+executable:/usr/bin/redis-server
+config_file:/etc/redis.conf
+127.0.0.1:6379>
+
+Step 6: Perform Redis Benchmarking
+
+Run the benchmark with 20 parallel connections, for a total of 100k requests, against local redis to test its performance.
+
+$ redis-benchmark -h 127.0.0.1 -p 6379 -n 100000 -c 20
+................................................
+====== LRANGE_600 (first 600 elements) ======
+  10000 requests completed in 0.15 seconds
+  15 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+67114.09 requests per second
+
+====== MSET (10 keys) ======
+  10000 requests completed in 0.15 seconds
+  15 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+100.00% <= 0 milliseconds
+66666.66 requests per second
+
+For more options and examples, use:
+
+$ redis-benchmark --help
+
+This marks the end of our guide on how to install redis on Fedora. Other Fedora articles are:
+
+Installing MongoDB 4.x on CentOS / Fedora
+
+Install GitLab CE on CentOS 7 / Fedora
+
+How to Install Grafana on Fedora
+
+How to Install Telegraf on Fedora
+
+Installing Latest Apache Maven on CentOS 7 / Fedora
+You can support us by downloading this article as PDF from the Link below.
+

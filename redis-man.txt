@@ -1,0 +1,72 @@
+Remote Dictionary Service
+=========================
+
+* pure redis
+  ----------
+
+https://computingforgeeks.com/how-to-install-redis-on-fedora/
+dnf -y update
+dnf -y install redis
+systemctl enable --now redis
+
+* redis image on docker
+  ---------------------
+
+https://channels.readthedocs.io/en/latest/tutorial/part_2.html
+https://linuxconfig.org/how-to-install-docker-on-fedora-31
+
+dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker-ce.repo
+dnf install docker-ce
+service docker start (this session)
+systemctl enable docker (at startup)
+systemctl disable docker (from startup)
+systemctl stop docker 
+docker run -p 6379:6379 -d redis:5
+
+test:
+redis-cli
+pgrep redis-server
+
+* django/python client redis
+  --------------------------
+
+https://kb.objectrocket.com/redis/redis-example-with-python-951#start+the+redis+server
+https://realpython.com/python-redis/
+https://opensource.com/article/18/4/how-build-hello-redis-with-python
+https://stackabuse.com/working-with-redis-in-python-with-django/
+https://github.com/django/channels_redis
+https://hub.docker.com/_/redis
+
+pip install channels
+
+ -> channels-redis
+    --------------
+pip install channels-redis
+
+Django config:
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}
+
+
+ -> django-redis 
+    ------------
+pip install django-redis
+
+Django config:  (currently don't work) ?
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
